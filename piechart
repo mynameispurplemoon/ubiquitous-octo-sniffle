@@ -1,0 +1,7 @@
+for i in data.select_dtypes(include='object').columns.values:
+    if len(data[i].value_counts()) <=10:
+        val=data[i].value_counts().values
+        index=data[i].value_counts().index
+        plt.pie(val,labels=index,autopct='%1.1f%%')
+        plt.title(f'The PIE Chart information of {i} column')
+        plt.show()
