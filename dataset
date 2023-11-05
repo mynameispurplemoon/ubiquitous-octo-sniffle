@@ -1,0 +1,6 @@
+data=pd.read_csv("/kaggle/input/iot-dataset-for-intrusion-detection-systems-ids/BoTNeTIoT-L01-v2.csv")
+print(data.columns)
+print(data.describe())
+print(data.isna().sum())
+print(data.info())
+print(len(data.columns))
