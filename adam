@@ -1,0 +1,62 @@
+lab=LabelEncoder()
+for i in data.select_dtypes(include='object').columns.values:
+    data[i]=lab.fit_transform(data[i])
+x={}
+X=[]
+for i in data.columns.values:
+    data['z-scores']=(data[i]-data[i].mean())/(data[i].std())
+    outliers=np.abs(data['z-scores'] > 3).sum()
+    x[i]=outliers
+for keys,values in x.items():
+    if values>0:
+        X.append(keys)
+print(x)
+x=[]
+
+thresh=2
+for i in data[X].columns.values:
+    upper=data[i].mean()+thresh*data[i].std()
+    lower=data[i].mean()-thresh*data[i].std()
+    data=data[(data[i]>lower)&(data[i]<upper)]
+
+print(len(data))
+4759690
+corr=data.corr()['Attack']
+corr=corr.drop(['Attack','z-scores','label'])
+for i in corr.index:
+    print(i)
+    if corr[i] > 0.25:
+        x.append(i)
+X=data[x]
+data['Attack']=lab.fit_transform(data['Attack'])
+Y=data['Attack']
+x_train,x_test,y_train,y_test=train_test_split(X,Y)
+
+lr = LogisticRegression(max_iter=500)
+lr.fit(x_train, y_train)
+print('The logistic regression: ', lr.score(x_test, y_test))
+
+lgb = LGBMClassifier() 
+lgb.fit(x_train, y_train)
+print('The LGB', lgb.score(x_test, y_test))
+
+tree = DecisionTreeClassifier(criterion='entropy', max_depth=5)
+tree.fit(x_train, y_train)
+print('Dtree ', tree.score(x_test,y_test))
+x=data[x]
+print(len(x))
+y=pd.get_dummies(data['Attack'])
+x_trin,x_tst,y_trin,y_tst=train_test_split(x,y)
+models=Sequential()
+models.add(Dense(units=x.shape[1],input_dim=x.shape[1],activation=keras.activations.relu))
+models.add(Dense(units=x.shape[1],activation=keras.activations.softmax))
+models.add(Dense(units=x.shape[1],activation=keras.activations.softmax))
+models.add(Dense(units=x.shape[1],activation=keras.activations.softmax))
+models.add(Dense(units=y.shape[1],activation=keras.activations.softmax))
+models.compile(optimizer='adam',loss=keras.losses.categorical_crossentropy,metrics='accuracy')
+hist=models.fit(x_trin,y_trin,batch_size=500,epochs=50)
+plt.plot(hist.history['accuracy'], label='training accuracy', marker='o', color='red')
+plt.plot(hist.history['loss'], label='loss', marker='o', color='darkblue')
+plt.title('Training Vs  Validation accuracy with adam optimizer')
+plt.legend()
+plt.show()
